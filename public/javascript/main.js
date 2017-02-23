@@ -23,7 +23,8 @@ var rafID = null;
 var analyserContext = null;
 var canvasWidth, canvasHeight;
 var recIndex = 0;
-var witToken = 'GC3OSVZ6ETFEGQOBZGRRXTQKG7DV7T4O'
+var witToken = 'GC3OSVZ6ETFEGQOBZGRRXTQKG7DV7T4O';
+var witSpeechUrl = 'https://api.wit.ai/speech?v=20160526';
 
 /* TODO:
 
@@ -60,7 +61,7 @@ function doneEncoding( blob ) {
     var fd = new FormData();
     fd.append('fname', 'test.wav');
     fd.append('data', blob);
-    $.ajax('https://api.wit.ai/speech?v=20141022', {
+    $.ajax(witSpeechUrl, {
         method: 'post',
         data: fd,
         processData: false,
