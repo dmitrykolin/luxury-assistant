@@ -25,6 +25,7 @@ var canvasWidth, canvasHeight;
 var recIndex = 0;
 var witToken = 'GC3OSVZ6ETFEGQOBZGRRXTQKG7DV7T4O';
 var witSpeechUrl = 'https://api.wit.ai/speech?v=20160526';
+var witMessageUrl = 'https://api.wit.ai/message?v=20160526&q=';
 
 /* TODO:
 
@@ -58,14 +59,18 @@ function witAuthorize(token) {
 }
 
 function doneEncoding( blob ) {
+    // Recorder.setupDownload( blob, "myRecording" + ((recIndex<10)?"0":"") + recIndex + ".wav" );
+    // recIndex++;
+    // return;
+
     var fd = new FormData();
-    fd.append('fname', 'test.wav');
+    // fd.append('fname', 'test.wav');
     fd.append('data', blob);
     $.ajax(witSpeechUrl, {
         method: 'post',
-        data: fd,
+        body: fd,
         processData: false,
-        contentType: false,
+        // contentType: false,
         headers: {
             'Authorization': 'Bearer '+witToken,
             'Content-Type': 'audio/wav'
@@ -211,6 +216,48 @@ function initAudio() {
             alert('Error getting audio');
             console.log(e);
         });
+
+
+    var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    var speakButton = $('.speak_button');
+    var chatContainer = $('.chat_container');
+    speakButton.click(function() {
+        if (speakButton.disabled) {
+            return false;
+        }
+        var recognition = new SpeechRecognition();
+        recognition.start();
+        speakButton.disabled = true;
+        recognition.onresult = function(event) {
+            var recognizedText = event.results[0][0].transcript
+            console.log('Confidence: ' + recognizedText);
+
+            $.ajax(witMessageUrl+recognizedText, {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer '+witToken,
+                    'Content-Type': 'audio/wav'
+                }
+            })
+                .done(function(res) {
+                    var currentText = chatContainer.val() || '';
+                    chatContainer.val(currentText + '\r\n' + JSON.stringify(res));
+                    // alert(JSON.stringify(res));
+                })
+                .fail(function(res) {
+                    alert(JSON.stringify(res));
+                });
+        }
+
+        recognition.onspeechend = function() {
+            recognition.stop();
+            speakButton.disabled = false;
+        }
+
+        recognition.onerror = function(event) {
+            speakButton.disabled = false;
+        }
+    })
 }
 
 window.addEventListener('load', initAudio );
