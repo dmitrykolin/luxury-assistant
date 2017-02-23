@@ -72,10 +72,10 @@ function doneEncoding( blob ) {
 
     })
         .done(function(res) {
-            alert(res);
+            alert(JSON.stringify(res));
         })
         .fail(function(res) {
-            alert(res);
+            alert(JSON.stringify(res));
         });
 }
 
